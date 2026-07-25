@@ -1,17 +1,33 @@
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 
-// Define initial state
-const initialState = {
-  items: [],
-  totalItems: 0,
-  totalPrice: 0,
+// ==================== Initial State ====================
+const STORAGE_KEY = 'shopping_cart';
+
+const getInitialState = () => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      // ignore
+    }
+  }
+  return {
+    items: [],
+    totalItems: 0,
+    totalPrice: 0,
+  };
 };
 
-// Reducer functions
+const initialState = getInitialState();
+
+// ==================== Reducer ====================
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const existingItem = state.items.find(item => item.productId === action.payload.productId);
+      const existingItem = state.items.find(
+        item => item.productId === action.payload.productId
+      );
       let updatedItems;
       if (existingItem) {
         updatedItems = state.items.map(item =>
@@ -35,33 +51,39 @@ const cartReducer = (state, action) => {
     }
 
     case 'UPDATE_QUANTITY': {
-      const updatedItems = state.items.map(item =>
-        item.productId === action.payload.productId
-          ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-          : item
-      ).filter(item => item.quantity > 0);
+      const updatedItems = state.items
+        .map(item =>
+          item.productId === action.payload.productId
+            ? { ...item, quantity: Math.max(0, action.payload.quantity) }
+            : item
+        )
+        .filter(item => item.quantity > 0);
       const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
       const totalPrice = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
       return { items: updatedItems, totalItems, totalPrice };
     }
 
     case 'CLEAR_CART':
-      return initialState;
+      return { items: [], totalItems: 0, totalPrice: 0 };
 
     default:
       return state;
   }
 };
 
-// Create Context
+// ==================== Context ====================
 const CartContext = createContext();
 
-// Provider
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
+  // ✅ Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [state]);
+
+  // ✅ Actions
   const addItem = (product) => {
-    console.log(product, "product");
     dispatch({
       type: 'ADD_ITEM',
       payload: {
@@ -70,7 +92,6 @@ export const CartProvider = ({ children }) => {
         price: product.price,
         unit: product.unit,
         image: product.image_url || '',
-        // store_id: product.store_id, // We can add store ID later
       },
     });
   };
@@ -88,11 +109,24 @@ export const CartProvider = ({ children }) => {
   };
 
   return (
-    <CartContext.Provider value={{ ...state, addItem, removeItem, updateQuantity, clearCart }}>
+    <CartContext.Provider
+      value={{
+        ...state,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
 };
 
-// Custom hook
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
