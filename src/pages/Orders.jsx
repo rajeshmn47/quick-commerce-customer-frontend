@@ -199,7 +199,7 @@ function Orders() {
                                                 onClick={async () => {
                                                     if (!window.confirm('Cancel this order?')) return;
                                                     try {
-                                                        await api.put(`/orders/${order._id}/status`, { status: 'cancelled' });
+                                                        await api.put(`/orders/${order._id}`, { status: 'cancelled' });
                                                         fetchOrders();
                                                     } catch (err) {
                                                         alert('Failed to cancel order');

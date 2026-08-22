@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
+import SearchBar from './SearchBar'; // 👈 import
 
 function Navbar() {
     const { totalItems } = useCart();
@@ -23,6 +24,11 @@ function Navbar() {
                         <span className="text-2xl">🛍️</span>
                         <span className="text-xl font-bold text-blue-600">Shop</span>
                     </Link>
+
+                    {/* 👇 Search Bar - visible on desktop */}
+                    <div className="hidden md:block flex-1 max-w-md mx-4">
+                        <SearchBar />
+                    </div>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">
@@ -74,6 +80,10 @@ function Navbar() {
                 {/* Mobile Menu */}
                 {isMenuOpen && (
                     <div className="md:hidden py-4 border-t border-gray-100 space-y-3">
+                        {/* 👇 Search bar inside mobile menu */}
+                        <div className="px-2">
+                            <SearchBar />
+                        </div>
                         <Link
                             to="/"
                             className="block text-gray-600 hover:text-blue-600 transition px-2"

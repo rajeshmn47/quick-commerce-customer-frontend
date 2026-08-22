@@ -14,6 +14,7 @@ import OrderTracking from './pages/OrderTracking';
 import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import Orders from './pages/Orders';
+import SearchResults from './pages/SearchResults';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -48,6 +49,11 @@ function AppContent() {
                     <Route path="/product/:id" element={
                         <ProtectedRoute>
                             <ProductDetail />
+                        </ProtectedRoute>
+                    } />
+                     <Route path="/search" element={
+                        <ProtectedRoute>
+                            <SearchResults />
                         </ProtectedRoute>
                     } />
                     <Route path="/cart" element={
